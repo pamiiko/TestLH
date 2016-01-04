@@ -1,0 +1,58 @@
+*** Settings ***
+Library           DatabaseLibrary
+Library           Selenium2Library
+
+*** Variables ***
+${Username}     imm
+${Password}     pornthida
+${LOGIN_URL}     http://172.16.23.58:280/#/login
+${BROWSER}     Chrome
+${XPATH_TEXTBOXID}     xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[1]/input     # xpart ชอง field รหัสกองทุนใน pop-up
+${XPATH_TEXTBOXNAME}     xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[2]/input     # xpart ชอง field ชื่อกองทุนใน pop-up
+${XPATH_radio_All}     xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[1]/label  #xpath ของ radio button ทังหมด
+
+*** Keywords ***
+Open Browser and Login
+    Open Browser    ${LOGIN_URL}    ${BROWSER}
+    Sleep     1
+    Input Text    txtUserName    ${Username}
+    Sleep     1
+    Input Text    txtPassword    ${Password}
+    Sleep     1
+    Click Element    btnLogin
+    Wait Until Page Contains     ยินดีต้อนรับสู่ระบบกองทุนสำรองเลี้ยงชีพ
+
+Click manu contribution system
+    Sleep     1
+    Wait Until Page Contains    ยินดีต้อนรับสู่ระบบกองทุนสำรองเลี้ยงชีพ    timeout=60
+    Sleep    1
+    Click Element    xpath=//*[@id="ng-app"]/body/section/aside/nav/div/div[3]/div[1]     #click CONTRIBUTION SYSTEM
+    Sleep    2
+
+Click manu receive funds
+    Sleep    1
+    Click Element    xpath=//*[@id="ng-app"]/body/section/aside/nav/div/div[3]/div[39]/div/div/a     #click รับเงินเข้ากองทุน
+    Wait Until Page Contains    รายการรับเงินเข้ากองทุน    timeout=60
+    Sleep    2
+
+Click fund search for show popup
+    Sleep    1
+    Click Element    xpath=//*[@id="txtLovFundSearch"]/div[1]/button/span    #click button search ที่กองทุน
+
+Click button x to close popup
+    Sleep    1
+    Click Element     xpath=//*[@id="lovFund"]/div/div/div[1]/button    #click button x
+
+Logout page
+    Sleep    1
+    Click Element    ddlSetting     #click Setting
+    Sleep    1
+    Click Element    xpath=//*[@id="ng-app"]/body/header/div[3]/div/div/ul/li[2]/a     #click logout
+    Wait Until Page Contains Element     btnLogin     timeout=60
+    Sleep    3
+
+Connect DB
+    Connect To Database Using Custom Params    pymssql    database='PvdBackOfficeTest',user='pvd',password='pvd@!2015',host='172.16.23.59'
+
+Check message from search data
+    Wait Until Page Contains    ไม่พบข้อมูลที่ต้องการค้นหา
