@@ -1,0 +1,60 @@
+*** Settings ***
+Library    Selenium2Library
+Resource    ConfigVariables.txt
+Library           DatabaseLibrary
+Library     BuiltIn
+Library     String
+Library     MyLibrary.py
+#Test teardown    Close Browser
+
+*** Variables ***
+
+
+*** Testcases ***
+Case1 : LHF_TC_GUI_RCV_007_026 : ตรวจสอบการค้นหา รหัสกองทุน แบบ %XX
+    Open Browser and Login
+    Click manu contribution system
+    Click manu receive funds
+    Click fund search for show popup
+    Wait popup and Input Text
+    Click radio button ทั้งหมด and Click search
+    Check db 
+    Click button x to close popup
+    Logout page
+    
+*** Keywords ***
+
+Wait popup and Input Text
+    Wait Until Page Contains Element    xpath=//*[@id="ng-app"]/body    #รอ popup แสดง
+    Sleep    1
+    Input Text    ${XPATH_TEXTBOXID}    %361    #ใส่รหัสกองทุน
+
+Click radio button ทั้งหมด and Click search
+    Sleep    1
+    Click Element    ${XPATH_radio_All}    #คลิก radio button ทั้งหมด
+    Sleep    1
+    Click Element    btnSearch    #ตลิกปุ่มค้นหา
+
+    Wait Until Page Contains Element    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[3]/div[2]/label    #รอให้แสดงรายการ
+    Sleep    3
+
+Check db 
+    DatabaseLibrary.Connect To Database Using Custom Params    pymssql    database='PvdBackOfficeTest',user='pvd',password='pvd@!2015',host='172.16.23.59'
+    @{tmp}    Query    Select * from Fund Where Code Like '%361%'                 #ต่อ database และ หารหัสกองทุนด้วย 361
+    @{tmp1}    Query    Select Count (*) from Fund Where Code Like '%361%'      #หาจำนวนรหัสกองทุน
+
+    Sleep    1
+    Check If Exists In Database    Select * from Fund Where Code Like '%361%'    #ตรวจสอบข้อมูลที่ค้นหา
+
+        ##### compare ข้อมูลจาก app กับ database
+
+    ${hstr}    Get Text    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[3]/div[2]/label   #getค่ารายการ
+    ${str}    Remove String    ${hstr}     รายการ    #ตัดค่าสตริงจากหน้าแอพ
+    ${myString}    Remove Whitespace    ${str}     #ตัดค่าว่างจาก ${str} จะได้ตัวแปรใหม่เป็น ${myString}
+
+    ${result}    Convert To String    @{tmp1}    #Convert ค่า @{tmp1} ที่เป็นค่า tuple ให้เป็นค่า string
+    ${resulttmp1}    Remove String   ${result}     (           #ตัด ( ออกจาก (2,) ให้เป็น  2,)
+    ${resulttmp2}    Remove String   ${resulttmp1}     ,)           #ตัด ,) ออกจาก 2,) ให้เป็น  2
+
+    
+    Should Be Equal As Strings    ${myString}    ${resulttmp2}
