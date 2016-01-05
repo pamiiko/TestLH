@@ -1,0 +1,91 @@
+*** Settings ***
+Library    Selenium2Library
+Resource    ConfigVariables.txt
+Library           DatabaseLibrary
+Library     BuiltIn
+Library     String
+#Library     MyLibrary.py
+#Test teardown    Close Browser
+
+*** Variables ***
+${Closebtn_popup}       xpath=//*[@id="lovFund"]/div/div/div[1]/button
+
+*** Testcases ***
+Case2 : LHF_TS_REG_CON_RCV_001_002 : ตรวจสอบการยกเลิกรายการรับเงินนำส่งที่มีสถานะ = บันทึก
+    Open Browser and Login
+    Click manu contribution system
+    Click manu receive funds
+    Click Button add data 
+    Fill in data and click button save
+    Get Transaction No. , Search Transaction No. and Click Button Delete
+    Logout page
+
+
+
+
+*** Keywords ***
+Click Button add data
+    sleep    1
+    Click Element    btnaddreceive    #กดปุ่มเพิ่ม
+    Wait Until Page Contains    บันทึกรายการรับเงินเข้ากองทุน    timeout=60     #รอจนกว่าจะขึ้นคำว่า "บันทึกรายการรับเงินเข้ากองทุน"
+
+Fill in data and click button save
+    Sleep    1
+    Click Element    xpath=//*[@id="txtLovFund"]/div[1]/button    #คลิกแว่นขยายในช่องกองทุน
+    Sleep    1
+    Input Text    txtCode    AW      #ใส่ข้อความ AW ในช่องรหัสกองทุน  
+    Sleep    1 
+    Click Element    btnSearch     #คลิกปุ่มค้นหา
+    Sleep    1 
+    Click Element    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[1]/td[2]    #คลิกเลือกรหัสกองทุนอันแรก
+    Sleep    1 
+    Click Element    xpath=//*[@id="txtLovCompany"]/div[1]/button    #คลิกเแว่นขยายในส่วนของนายจ้าง
+    Sleep    1 
+    Click Element    xpath=//*[@id="lovCompany"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[1]/td[2]    #คลิกเลือกรหัสนายจ้างอันแรก
+    Sleep    1 
+    Click Element    xpath=//*[@id="s2id_autogen7"]/a      #คลิกdrop down list เพื่อเลือกข้อมูลในส่วนของงวดการนำส่ง
+    Sleep    1 
+    Click Element    xpath=//*[@id="select2-results-8"]/li[3]    #คลิกเลือกงวดที่ในช่องงวดการนำส่ง
+
+    Sleep    1 
+    Input Text    txtAmount    23232      #ระบุจำนวนเงินในช่องจำนวนเงิน
+    Sleep    1 
+    Click Element    xpath=//*[@id="s2id_autogen11"]/a/span[2]    #คลิกdrop down list เพื่อเลือกข้อมูล
+    Sleep    1
+    Click Element    xpath=//*[@id="select2-results-12"]/li[3]        #คลิกเลือกคำว่โอนเงิน
+    Sleep    1
+    Click Element    btnSave     #คลิกปุ่ม save
+
+Get Transaction No. , Search Transaction No. and Click Button Delete
+
+#Get Transaction No. , Search Transaction No.
+    Sleep    1
+    ${TranNo}    Get Value    txtTransactionNo   #getค่ารายการ TransactionNo  
+    ${strTranNo}    Convert To String    ${TranNo}    #convert TransactionNo
+
+     Sleep    1
+     Click Element    btnBack     #กลับไปหน้ารับเงินเข้ากองทุน
+
+     Sleep    1
+     Input Text    txtTransactionNo    ${strTranNo}   #นำค่าที่ get ได้มาใส่ในช่อง Transaction No.
+
+     Sleep    1
+     Click Element    btnsearch      #คลิกปุ่มค้นหาในนารับเงินเข้ากองทุน
+     Wait Until Page Contains Element    xpath=//*[@id="lblStatus0"]    #รอจนกว่าจะพบสถานะบันทึก
+
+     Sleep    1
+     Click Element    xpath=//*[@id="ng-app"]/body/section/div[2]/div/div/fieldset[2]/table/tbody/tr/td[11]/i     #คลิกสัญลลักษณ์แก้ไข
+  
+# Click Button Delete
+    #รอจนกว่าจะพบสถานะบันทึกในนหน้าบันทึกรายการรับเงินเข้ากองทุน
+    Wait Until Page Contains Element    xpath=//*[@id="ng-app"]/body/section/div[2]/div/div/div[1]/span[2]    
+    
+    Sleep    1
+    Click Element    btnDelete      #คลิกปุ่มยกเลิกรายการ
+    Wait Until Page Contains Element    xpath=//*[@id="confirm-dialog"]/div/div      #รอจนกว่าจะขึ้น popupให้ยยืนยันการยกเลิกรายการ
+    Sleep    1
+    Click Element    xpath=//*[@id="confirm-dialog"]/div/div/div[3]/button[2]     #คลิกปุ่มตกลงในหน้า popup การยืนยันยกเลิกรายการ
+    Wait Until Page Contains Element    xpath=//*[@id="ng-app"]/body/span        #รอจนกว่าจะขึ้นน popup สีเขียวว่าทำรายการสำเร็จ
+    Wait Until Page Contains Element    xpath=//*[@id="ng-app"]/body/section/div[2]/div/div/div[1]/span[2]     #รอจนกว่าจะขึ้นสถานะยกเลิก
+
+    Sleep    5
