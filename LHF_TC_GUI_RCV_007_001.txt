@@ -1,0 +1,102 @@
+*** Settings ***
+Library    Selenium2Library
+Resource    ConfigVariables.txt
+Library           DatabaseLibrary
+Library     BuiltIn
+Library     String
+Library     MyLibrary.py
+Test teardown    Close Browser
+
+*** Variables ***
+${Closebtn_popup}       xpath=//*[@id="lovFund"]/div/div/div[1]/button
+
+*** Testcases ***
+Case1 : LHF_TC_GUI_RCV_007_001 : ตรวจสอบ Field และ Default ในหน้า Pop-Up เลือกรายกองทุน
+    Open Browser and Login
+    Click manu contribution system
+    Click manu receive funds
+    Click fund search for show popup
+    Verify db
+    Verify กองทุน   #แสดงชื่อหน้าจอ 'กองทุน'
+    Click button x to close popup
+    Logout page
+
+
+*** Keywords ***
+
+Verify db
+    Sleep    1
+    DatabaseLibrary.Connect To Database Using Custom Params    pymssql    database='PvdBackOfficeTest',user='pvd',password='pvd@!2015',host='172.16.23.59'
+    @{tmp}    Query    Select count (*) from Fund Where isactive = 'true'           #ต่อ database และ เช็คจำนวนกองทุนในค่าปกติ ต้องมี 250 รายการ
+    Sleep    1
+    @{tmp1}    Query    Select Code,NameEng from Fund Where isactive = 'true' ORDER BY Code ASC   #ตรวจสอบการเรียงข้อมูลใน ค่า ปกติ
+
+    ${hstr}    Get Text    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[3]/div[2]/label   #getค่ารายการ
+    ${str}    Convert To String    ${hstr}    #Convert ค่า ${hstr} ให้เป็นค่า string
+    ${str1}    Remove String    ${str}    รายการ    #ตัดค่าสตริงจากหน้าแอพ
+    ${myString}    Remove Whitespace    ${str1}     #ตัดค่าว่างจาก ${str} จะได้ตัวแปรใหม่เป็น ${myString}
+
+    ${result}    Convert To String    @{tmp}    #Convert ค่า @{tmp1} ที่เป็นค่า tuple ให้เป็นค่า string
+    ${resulttmp1}    Remove String   ${result}     (           #ตัด ( ออกจาก (2,) ให้เป็น  2,)
+    ${resulttmp2}    Remove String   ${resulttmp1}     ,)           #ตัด ,) ออกจาก 2,) ให้เป็น  2
+
+    Should Be Equal As Strings    ${myString}    ${resulttmp2}
+
+Verify กองทุน
+
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[1]/span    กองทุน          #ตรวจสอบชื่อ "กองทุน" part of tittle 
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[1]/label    รหัสกองทุน    #ตรวจสอบ รหัสกองทุน
+    Sleep    1
+    Input Text    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[1]/input    TESTNO.   #พิมพ์ "TESTNO." ลงในรหัสกองทุน
+    Textfield Value Should Be    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[1]/input    TESTNO.    #ตรวจสอบค่าที่พิมพ์ในรหัสกองทุน
+
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[2]/label    ชื่อกองทุน    #ตรวจสอบชื่อกองทุน
+    Sleep    1
+    Input Text    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[2]/input    TESTNAME   #พิมพ์ "TESTNAME" ลงในรหัสกองทุน
+    Textfield Value Should Be    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[1]/div[2]/input    TESTNAME    #ตรวจสอบค่าที่พิมพ์ในรหัสกองทุน
+
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/label    สถานะ  #wait label สถานะ
+
+    Sleep    1
+    Radio Button Should Be Set To    1188    1      #ตรวจสอบ radio button "ปกติ" ที่เลือกอยู่
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[2]/label    ปกติ    #ตรวจสอบคำว่าปกติ
+
+    Sleep    1
+    Radio Button Should Not Be Selected    1186     #ตรวจสอบ radio button "ทั้งหมด" ที่ไม่เลือก
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[1]/label    ทั้งหมด    #ตรวจสอบคำว่าทั้งหมด
+
+    Sleep    1
+    Radio Button Should Not Be Selected    1190    #ตรวจสอบ radio button "ยกเลิก" ที่ไม่เลือก
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[3]/label    ยกเลิก    #ตรวจสอบคำว่ายกเลิก
+
+    Sleep    1
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/thead/tr/th[1]/span    ลำดับที่   #wait field ลำดับที่
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/thead/tr/th[2]/a/span[1]    รหัสกองทุน    #wait field รหัสกองทุน
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/thead/tr/th[3]/a/span    ชื่อกองทุน      #wait field ชื่อกองทุน
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/thead/tr/th[4]/a/span    สถานะ   #wait field สถานะ
+
+    #เช็คจำนวน record ต้องมีจำนวน 8 record ต่อหน้าเท่านั้น
+    Sleep    1
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[1]/td[1]    1
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[2]/td[1]    2
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[3]/td[1]    3
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[4]/td[1]    4
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[5]/td[1]    5
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[6]/td[1]    6
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[7]/td[1]    7
+    Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[8]/td[1]    8
+    Wait Until Element Does Not Contain    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/table/tbody/tr[1]/td[1]    9
+
+    #เช็คปุ่ม <<1 2 3 4.......>> : เพื่อเรียกดูข้อมูลในหน้าอื่น
+    Sleep    1
+    Mouse Down    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/div/dir-pagination-lov/ul/li[1]/a     #ปุ่ม >>
+    Mouse Down    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[2]/div/dir-pagination-lov/ul/li[5]/a  #ปุ่ม <<
+
+    Page Should Contain Button    btnSearch     #wait button search
+    Page Should Contain Button    btnCancel     #wait button clear
+
+    Page Should Contain Button    ${Closebtn_popup}    #wait close button
+   
+    Sleep    1 
+
+
