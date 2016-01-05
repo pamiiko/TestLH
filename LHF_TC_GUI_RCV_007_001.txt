@@ -58,15 +58,15 @@ Verify กองทุน
     Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/label    สถานะ  #wait label สถานะ
 
     Sleep    1
-    Radio Button Should Be Set To    1202    1      #ตรวจสอบ radio button "ปกติ" ที่เลือกอยู่
+    Radio Button Should Be Set To    1197    1      #ตรวจสอบ radio button "ปกติ" ที่เลือกอยู่
     Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[2]/label    ปกติ    #ตรวจสอบคำว่าปกติ
 
     Sleep    1
-    Radio Button Should Not Be Selected    1200     #ตรวจสอบ radio button "ทั้งหมด" ที่ไม่เลือก
+    Radio Button Should Not Be Selected    1195     #ตรวจสอบ radio button "ทั้งหมด" ที่ไม่เลือก
     Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[1]/label    ทั้งหมด    #ตรวจสอบคำว่าทั้งหมด
 
     Sleep    1
-    Radio Button Should Not Be Selected    1204    #ตรวจสอบ radio button "ยกเลิก" ที่ไม่เลือก
+    Radio Button Should Not Be Selected    1199    #ตรวจสอบ radio button "ยกเลิก" ที่ไม่เลือก
     Wait Until Element Contains    xpath=//*[@id="lovFund"]/div/div/div[2]/div/fieldset[1]/div[2]/div/div/div[3]/label    ยกเลิก    #ตรวจสอบคำว่ายกเลิก
 
     Sleep    1
